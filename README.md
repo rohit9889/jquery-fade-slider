@@ -7,3 +7,5 @@ A jQuery plugin to add fade effect to your slider items
 ### Default
 
     $(selector).fadeSlider()
+
+### 

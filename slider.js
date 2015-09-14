@@ -3,8 +3,9 @@
  * plugin: jquery.fade.slider
  * website: http://rohit-sharma.in/jquery-fade-slider/
  */
+var fadeSliderBase = null;
 
- (function($) {
+(function($) {
   $.fn.fadeSlider = function(options) {
     var defaults = {
       itemPerPage: 4,
@@ -13,61 +14,64 @@
     }
     defaults.wrapper = this
 
-    var base = $.extend({}, defaults, options)
+    fadeSliderBase = $.extend({}, defaults, options)
 
     // Get a list of all the child divs
-    base.children = $('div', base.wrapper)
+    fadeSliderBase.children = $('div', fadeSliderBase.wrapper)
 
     // Count the children
-    base.totalItems  = $(base.children).length
+    fadeSliderBase.totalItems  = $(fadeSliderBase.children).length
 
     // Honey, I Shrunk the Kids
-    $(base.children).attr('style', 'display:none;')
+    $(fadeSliderBase.children).attr('style', 'display:none;')
 
     // Reset the number of itemPerPage based on window width
     if($(window).width() < 450){
-      base.itemPerPage = 1
+      fadeSliderBase.itemPerPage = 1
     } else if($(window).width() >= 450 && $(window).width() < 1000){
-      base.itemPerPage = 2
+      fadeSliderBase.itemPerPage = 2
     }
 
     // The space alloted to every child
-    base.width = 100 / base.itemPerPage
+    fadeSliderBase.width = 100 / fadeSliderBase.itemPerPage
+
+    // Enforce timeout is greater than or equal to 2 seconds
+    if(fadeSliderBase.timeout < 2000) fadeSliderBase.timeout = 2000
 
     // Providing support to the dumb people who resize the screen to test responsiveness
     $(window).resize(function(){
       if($(window).width() < 450){
-        base.itemPerPage = 1
+        fadeSliderBase.itemPerPage = 1
       } else if($(window).width() >= 450 && $(window).width() < 1000){
-        base.itemPerPage = 2
+        fadeSliderBase.itemPerPage = 2
       } else {
-        base.itemPerPage = 4
+        fadeSliderBase.itemPerPage = 4
       }
-      base.width = 100 / base.itemPerPage
+      fadeSliderBase.width = 100 / fadeSliderBase.itemPerPage
     })
 
     // Step 1: Initialize empty array of element indexes
-    base.arrayOfIndexes = Array.apply(null, {length: base.totalItems}).map(function(_,index){return index})
+    fadeSliderBase.arrayOfIndexes = Array.apply(null, {length: fadeSliderBase.totalItems}).map(function(_,index){return index})
 
     // Step 2: Get the element indexes that must be visible
-    base.elemsToShow    = selectElemFromArray(base.arrayOfIndexes, base.startIndex, base.itemPerPage)
+    fadeSliderBase.elemsToShow    = selectElemFromArray(fadeSliderBase.arrayOfIndexes, fadeSliderBase.startIndex, fadeSliderBase.itemPerPage)
 
     // Step 3: Trigger displaying elements
-    startAnim(base.elemsToShow, base.width, base)
+    startAnim(fadeSliderBase.elemsToShow, fadeSliderBase.width)
 
     // Step 4: Increment the counter to the next image
-    base.startIndex += base.itemPerPage
+    fadeSliderBase.startIndex += fadeSliderBase.itemPerPage
 
     // Perform Steps 1 through 4 at the specified `timeout`
     setTimeout(function(){
-      startCarouselAnimation(base.totalItems, base.startIndex, base.itemPerPage, base.elemsToShow, base.width, base.timeout, base)
-    }, base.timeout)
+      startCarouselAnimation(fadeSliderBase.totalItems, fadeSliderBase.startIndex, fadeSliderBase.itemPerPage, fadeSliderBase.elemsToShow, fadeSliderBase.width, fadeSliderBase.timeout)
+    }, fadeSliderBase.timeout)
   }
 
-  function startCarouselAnimation(totalItems, startIndex, itemPerPage, elemsToShow, width, timeout, base){
+  function startCarouselAnimation(totalItems, startIndex, itemPerPage, elemsToShow, width, timeout){
     arrayOfIndexes = Array.apply(null, {length: totalItems}).map(function(_,index){return index})
     elemsToShow    = selectElemFromArray(arrayOfIndexes, startIndex, itemPerPage)
-    startAnim(elemsToShow, width, base)
+    startAnim(elemsToShow, width)
     startIndex += itemPerPage
 
     // Reset startIndex if it exceeds totalItems
@@ -76,7 +80,7 @@
     }
 
     setTimeout(function(){
-      startCarouselAnimation(totalItems, startIndex, itemPerPage, elemsToShow, width, timeout, base)
+      startCarouselAnimation(fadeSliderBase.totalItems, fadeSliderBase.startIndex, fadeSliderBase.itemPerPage, fadeSliderBase.elemsToShow, fadeSliderBase.width, fadeSliderBase.timeout)
     }, timeout)
   }
 
@@ -90,33 +94,33 @@
     return returnArray
   }
 
-  function startAnim(indexes, width, base){
-    var length = $('.custom-slider-element-clones', base.wrapper).length
+  function startAnim(indexes, width){
+    var length = $('.custom-slider-element-clones', fadeSliderBase.wrapper).length
     if(length > 0){
       for(var i=0;i<length;i++){
-        var elem = $($('.custom-slider-element-clones',  base.wrapper)[i])
+        var elem = $($('.custom-slider-element-clones',  fadeSliderBase.wrapper)[i])
         if(i == length-1){
           elem.fadeOut(1000, function(){
-            $('custom-slider-element-clones', base.wrapper).remove()
-            addElems(indexes, width, base)
+            $('custom-slider-element-clones', fadeSliderBase.wrapper).remove()
+            addElems(indexes, width)
           })
         } else{
           elem.fadeOut(1000)
         }
       }
     } else {
-      addElems(indexes, width, base)
+      addElems(indexes, width)
     }
   }
 
-  function addElems(indexes, width, base){
+  function addElems(indexes, width){
     indexes.map(function(index){
-      var elem  = base.children[index]
+      var elem  = fadeSliderBase.children[index]
       var clone = $(elem).clone()
       clone.addClass('custom-slider-element-clones')
       clone.removeClass('hidden')
       clone.attr('style', 'width: ' + width + '%;float: left;')
-      base.wrapper.append(clone)
+      fadeSliderBase.wrapper.append(clone)
       clone.hide().fadeIn(1000) // Set delay for new elements to be visible
     })
   }
