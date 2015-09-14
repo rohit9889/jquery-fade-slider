@@ -80,7 +80,7 @@ var fadeSliderBase = null;
     }
 
     setTimeout(function(){
-      startCarouselAnimation(fadeSliderBase.totalItems, fadeSliderBase.startIndex, fadeSliderBase.itemPerPage, fadeSliderBase.elemsToShow, fadeSliderBase.width, fadeSliderBase.timeout)
+      startCarouselAnimation(totalItems, startIndex, fadeSliderBase.itemPerPage, elemsToShow, fadeSliderBase.width, timeout)
     }, timeout)
   }
 
@@ -101,7 +101,7 @@ var fadeSliderBase = null;
         var elem = $($('.custom-slider-element-clones',  fadeSliderBase.wrapper)[i])
         if(i == length-1){
           elem.fadeOut(1000, function(){
-            $('custom-slider-element-clones', fadeSliderBase.wrapper).remove()
+            $('.custom-slider-element-clones', fadeSliderBase.wrapper).remove()
             addElems(indexes, width)
           })
         } else{
