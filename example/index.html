@@ -2,11 +2,7 @@
 <script src="./slider.js"></script>
 <script type="text/javascript">
   $(document).ready(function(){
-    new CustomSlider({
-      wrapper: $('.slider'),
-      perPage: 5,
-      timeout: 3000
-    })
+    $('.slider').fadeSlider({itemPerPage: 2, timeout: 1000})
   })
 </script>
 <div class="slider" style="font-size: 100; width:100%;">
