@@ -23,6 +23,13 @@ A jQuery plugin to add fade effect to your slider items
     // Start rendering the slider from the element at 5th index
     $(selector).fadeSlider({startIndex: 5})
 
+### Let the elements slide
+    $(selector).fadeSlider({fade: false})
+
+# Documentation
+
+http://rohit-sharma.in/jquery-fade-slider
+
 # Demo
 
 http://rohit-sharma.in/jquery-fade-slider/demo
