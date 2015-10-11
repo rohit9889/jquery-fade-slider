@@ -1,7 +1,7 @@
 /* 
  * Author: @rohit9889
- * plugin: jquery.fade.slider v2.0
- * website: http://rohit-sharma.in/jquery-fade-slider/
+ * plugin: jquery.fade.slider v2.1
+ * website: http://jqueryfadeslider.com/
  * Copyright (c) 2015 Rohit Sharma
  * Licensed under MIT
  */
@@ -14,16 +14,19 @@
       itemPerPageTablet: 2,
       startIndex:  0,
       timeout:     4000,
-      fade:        true
+      fade:        true,
+      autoplay:    true
     }
+
     defaults.wrapper = this
+    this.addClass('jquery-fade-slider-wrapper')
 
     this.fadeSliderBase = $.extend({}, defaults, options)
     // Get a list of all the child divs
     this.fadeSliderBase.children = $('div', this.fadeSliderBase.wrapper)
 
     // Count the children
-    this.fadeSliderBase.totalItems  = $(this.fadeSliderBase.children).length
+    this.fadeSliderBase.totalItems  = $(this.fadeSliderBase.children).length    
 
     // Honey, I Shrunk the Kids
     $(this.fadeSliderBase.children).attr('style', 'display:none;')
@@ -75,20 +78,17 @@
       )
 
       // Step 4: Increment the counter to the next image
-      this.fadeSliderBase.startIndex += this.fadeSliderBase.itemPerPage
-      // Perform Steps 1 through 4 at the specified `timeout`
+      // this.fadeSliderBase.startIndex += this.fadeSliderBase.itemPerPage
       var that = this
-      this.interval = setInterval(function(){
-        var arrayOfIndexes = Array.apply(null, {length: that.fadeSliderBase.totalItems}).map(function(_,index){return index})
-        var elemsToShow    = selectElemFromArray(arrayOfIndexes, that.fadeSliderBase.startIndex, that.fadeSliderBase.itemPerPage)
-        startAnim(elemsToShow, that.fadeSliderBase.width, that.fadeSliderBase.wrapper, that.fadeSliderBase.children)
-        that.fadeSliderBase.startIndex += that.fadeSliderBase.itemPerPage
+      //Calculate and get the height of the shortest child
+      this.css('min-height', heightOfShortestChild(this.fadeSliderBase.children))
 
-        // Reset startIndex if it exceeds totalItems
-        if(that.fadeSliderBase.startIndex >= that.fadeSliderBase.totalItems){
-          that.fadeSliderBase.startIndex = that.fadeSliderBase.startIndex - that.fadeSliderBase.totalItems
-        }
-      }, that.fadeSliderBase.timeout)
+      // Run Animation if autoplay is true
+      if(that.fadeSliderBase.autoplay){
+        this.interval = setInterval(function(){
+          that.next()
+        }, that.fadeSliderBase.timeout)
+      }
     } else {
       // Slide Effect
       var arrayOfIndexes = Array.apply(null, {length: this.fadeSliderBase.totalItems}).map(function(_,index){return index})
@@ -100,18 +100,39 @@
         this.fadeSliderBase.children,
         this.fadeSliderBase.itemPerPage)
 
-      var width = ''
+      this.fadeSliderBase.innerWrapper = $('.fade-slider-wrapper', this.fadeSliderBase.wrapper)
       var that = this
-      this.interval = setInterval(function(){
-        var toremove = $($('.custom-slider-element-clones', that.fadeSliderBase.wrapper)[0])
-        if(!width){
-          width = toremove.css('width')
-          width     = Number(width.replace(/px/g, ''))
-          width     = (width - 1) + 'px'
+      this.css('min-height', heightOfShortestChild(this.fadeSliderBase.children))
+      if(that.fadeSliderBase.autoplay){
+        this.interval = setInterval(function(){
+          that.next()
+        }, that.fadeSliderBase.timeout)
+      }
+    }
+
+    this.destroy = function(){
+      clearInterval(this.interval)
+      this.fadeSliderBase.children.css({display: 'block'})
+      $('.jquery-fade-slider-clones', this.fadeSliderBase.wrapper).remove()
+    }
+
+    this.next = function(){
+      var that = this
+      if(this.fadeSliderBase.fade){
+        that.fadeSliderBase.startIndex += that.fadeSliderBase.itemPerPage
+        // Perform Steps 1 through 4 at the specified `timeout`
+        var arrayOfIndexes = Array.apply(null, {length: that.fadeSliderBase.totalItems}).map(function(_,index){return index})
+        var elemsToShow    = selectElemFromArray(arrayOfIndexes, that.fadeSliderBase.startIndex, that.fadeSliderBase.itemPerPage)
+        startAnim(elemsToShow, that.fadeSliderBase.width, that.fadeSliderBase.wrapper, that.fadeSliderBase.children)
+
+        // Reset startIndex if it exceeds totalItems
+        if(that.fadeSliderBase.startIndex >= that.fadeSliderBase.totalItems){
+          that.fadeSliderBase.startIndex = that.fadeSliderBase.startIndex - that.fadeSliderBase.totalItems
         }
+      } else {
+        var toremove = $($('.jquery-fade-slider-clones', that.fadeSliderBase.wrapper)[0])
 
-
-        $($('.custom-slider-element-clones', that.fadeSliderBase.wrapper)[that.fadeSliderBase.itemPerPage])
+        $($('.jquery-fade-slider-clones', that.fadeSliderBase.wrapper)[that.fadeSliderBase.itemPerPage])
         .animate({'width': that.fadeSliderBase.width + "%"}, {
           duration: 1000,
           start: function(){
@@ -119,42 +140,92 @@
               duration: 1000,
               done: function(){
                 var clone = toremove.clone()
-                clone.css({'margin-left': '', 'width': '0px'})
+                clone.css({'margin-left': '', 'width': '0px', 'margin-right': ''})
                 $('.fade-slider-wrapper', that.fadeSliderBase.wrapper).append(clone)
                 toremove.remove()
               }
             })
           }
         })
-      }, that.fadeSliderBase.timeout)
+      }
     }
 
-    this.destroy = function(){
-      clearInterval(this.interval)
-      this.fadeSliderBase.children.css({display: 'block'})
-      $('.custom-slider-element-clones', this.fadeSliderBase.wrapper).remove()
+    this.prev = function(){
+      var that = this
+
+      if(this.fadeSliderBase.fade){
+        that.fadeSliderBase.startIndex -= that.fadeSliderBase.itemPerPage
+        if(that.fadeSliderBase.startIndex < 0){
+          that.fadeSliderBase.startIndex = this.fadeSliderBase.totalItems + that.fadeSliderBase.startIndex
+        }
+        var arrayOfIndexes = Array.apply(null, {length: this.fadeSliderBase.totalItems}).map(function(_,index){return index})
+        var elemsToShow    = selectElemFromArray(
+          arrayOfIndexes,
+          this.fadeSliderBase.startIndex,
+          that.fadeSliderBase.itemPerPage
+        )
+        startAnim(elemsToShow, that.fadeSliderBase.width, that.fadeSliderBase.wrapper, that.fadeSliderBase.children)
+      } else {
+        var toRemoveIndex = that.fadeSliderBase.itemPerPage
+        var lastItemIndex = this.fadeSliderBase.totalItems - 1
+        var toremove = $($('.jquery-fade-slider-clones', that.fadeSliderBase.wrapper)[toRemoveIndex])
+
+        var lastItemClone = $($('.jquery-fade-slider-clones', that.fadeSliderBase.wrapper)[lastItemIndex]).clone()
+        $($('.jquery-fade-slider-clones', that.fadeSliderBase.wrapper)[lastItemIndex]).remove()
+        that.fadeSliderBase.innerWrapper.children().eq(0).before(lastItemClone)
+
+        $($('.jquery-fade-slider-clones', that.fadeSliderBase.wrapper)[0])
+        .animate({'width': that.fadeSliderBase.width + "%"}, {
+          duration: 1000,
+          start: function(){
+            toremove.animate({'margin-right': '-' + toremove.css('width')}, {
+              duration: 1000,
+              done: function(){
+                toremove.css({'margin-left': '', 'width': '0px', 'margin-right': ''})
+              }
+            })
+          }
+        })
+      }
     }
+
+
     return this
   }
 
-  function selectElemFromArray(array, start, itemCount){
+  function heightOfShortestChild(children){
+    var h = 0
+    children.map(function(index, child){
+      if(h == 0 || h > $(child).height()){
+        h = $(child).height()
+      }
+    })
+    return h+'px'
+  }
+
+  function selectElemFromArray(array, start, itemCount, reverse){
     var returnArray = []
-    returnArray = returnArray.concat(array.splice(start, itemCount))
-    if(returnArray.length < itemCount){
-      var remainingElems = itemCount-returnArray.length
-      returnArray = returnArray.concat(array.splice(0, remainingElems))
+    if(reverse){
+      console.log(array, start, itemCount)
+    }
+    else {
+      returnArray = returnArray.concat(array.splice(start, itemCount))
+      if(returnArray.length < itemCount){
+        var remainingElems = itemCount-returnArray.length
+        returnArray = returnArray.concat(array.splice(0, remainingElems))
+      }
     }
     return returnArray
   }
 
   function startAnim(indexes, width, wrapper, children){
-    var length = $('.custom-slider-element-clones', wrapper).length
+    var length = $('.jquery-fade-slider-clones', wrapper).length
     if(length > 0){
       for(var i=0;i<length;i++){
-        var elem = $($('.custom-slider-element-clones', wrapper)[i])
+        var elem = $($('.jquery-fade-slider-clones', wrapper)[i])
         if(i == length-1){
           elem.fadeOut(1000, function(){
-            $('.custom-slider-element-clones', wrapper).remove()
+            $('.jquery-fade-slider-clones', wrapper).remove()
             addElems(indexes, width, wrapper, children)
           })
         } else{
@@ -170,8 +241,7 @@
     indexes.map(function(index){
       var elem  = children[index]
       var clone = $(elem).clone()
-      clone.addClass('custom-slider-element-clones')
-      clone.removeClass('hidden')
+      clone.addClass('jquery-fade-slider-clones')
       clone.attr('style', 'width: ' + width + '%;float: left;')
       wrapper.append(clone)
       clone.hide().fadeIn(1000) // Set delay for new elements to be visible
@@ -184,8 +254,7 @@
     indexes.map(function(index){
       var elem  = children[index]
       var clone = $(elem).clone()
-      clone.addClass('custom-slider-element-clones')
-      clone.removeClass('hidden')
+      clone.addClass('jquery-fade-slider-clones')
       if(index < itemPerPage){
         clone.attr('style', 'width: ' + width + '%;float: left;')
       } else {
@@ -196,7 +265,7 @@
 
     $('.fade-slider-wrapper', wrapper).css({
       width: '100%',
-      height: $('.custom-slider-element-clones', wrapper).css('height'),
+      height: $('.jquery-fade-slider-clones', wrapper).css('height'),
       overflow: 'hidden'
     })
   }

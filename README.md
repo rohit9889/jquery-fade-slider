@@ -24,12 +24,18 @@ A jQuery plugin to add fade effect to your slider items
     $(selector).fadeSlider({startIndex: 5})
 
 ### Let the elements slide
+
     $(selector).fadeSlider({fade: false})
+
+### Stop Autoplay
+
+    $(selector).fadeSlider({autoplay: false})
+
 
 # Documentation
 
-http://rohit-sharma.in/jquery-fade-slider
+http://jqueryfadeslider.com/
 
 # Demo
 
-http://rohit-sharma.in/jquery-fade-slider/demo
+http://jqueryfadeslider.com/demo
